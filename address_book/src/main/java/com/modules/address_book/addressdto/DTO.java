@@ -14,7 +14,9 @@ public class DTO {
 
     public DTO(String name, String address,int id) {
         this.name = name;
+
         this.address = address;
+
         this.id=id;
     }
 
