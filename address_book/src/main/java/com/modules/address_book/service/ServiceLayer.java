@@ -1,5 +1,7 @@
 package com.modules.address_book.service;
 import com.modules.address_book.addressdto.DTO;
+import com.modules.address_book.entity.AddressEntity;
+import com.modules.address_book.repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,45 +15,43 @@ import java.util.List;
 @Service
 public class ServiceLayer {
 
-    private final List<DTO> addressBook=new ArrayList<>();;
+
+    @Autowired
+    private  AddressRepository addressRepository;
 
 
     // method to perform operation
-    public ResponseEntity<List<DTO>> address(){
-        if (addressBook.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(addressBook);
+    public List<AddressEntity> address(){
+        return addressRepository.findAll();
+    }
+
+    public AddressEntity addressId(Long id) {
+        return addressRepository.findById(id).orElseThrow(()->new RuntimeException("Id not found"));
+    }
+
+    public AddressEntity addEntry(AddressEntity entry) {
+        return addressRepository.save(entry);
+    }
+
+    public String deleteEntry(Long id){
+        if (!addressRepository.existsById(id)) {
+            throw new RuntimeException("Id not found, cannot delete");
         }
-        return ResponseEntity.ok(addressBook);
+        addressRepository.deleteById(id);
+        return "Record deleted";
     }
 
-    public ResponseEntity<?> addressId(int id) {
-        for (DTO dto : addressBook) {
-            if (dto.getId() == id) {
-                return ResponseEntity.ok(dto); // ✅ If found, return DTO
-            }
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found"); // ✅ If not found, return 404
-    }
+    public AddressEntity updateEntry(@RequestBody AddressEntity entry, Long id) {
 
-    public ResponseEntity<String> addEntry( @RequestBody DTO entry) {
-        addressBook.add(entry);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Entry added successfully");
-    }
+        return addressRepository.findById(id).map(updateEntry->{
 
-    public String deleteEntry(int id){
-        addressBook.remove(id);
-        return "record deleted";
-    }
+            updateEntry.setName(entry.getName());
+            updateEntry.setAddress(entry.getAddress());
+            return addressRepository.save(updateEntry);
 
-    public ResponseEntity<String> updateEntry(@RequestBody DTO entry, int id) {
-        for (DTO dto : addressBook) {
-            if (dto.getId() == id) {  // ✅ ID match check
-                dto.setName(entry.getName());
-                dto.setAddress(entry.getAddress());
-                return ResponseEntity.status(HttpStatus.OK).body("Address Updated Successfully");
-            }
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No entry found with ID: " + id);
+
+        }).orElseThrow(()->new RuntimeException("Id not found in Address book"));
+
     }
 
 
