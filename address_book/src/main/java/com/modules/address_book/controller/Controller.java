@@ -24,7 +24,7 @@ public ServiceLayer serviceLayer;
     }
     @GetMapping("/api/address/{id}")
     public AddressEntity addressId(@PathVariable Long id) {
-        return serviceLayer.addressId(id); // ✅ If not found, return 404
+        return serviceLayer.addressId(id); 
     }
 
     @PostMapping("/api/address")
